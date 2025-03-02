@@ -1,13 +1,18 @@
 import 'dart:core';
 import 'dart:io';
 
+import 'package:omnimusic/playerState.dart';
+import 'package:omnimusic/playerSummary.dart';
 import 'package:omnimusic/trackEntry.dart';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:omnimusic/trackInfo.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 final player = AudioPlayer();
 List<String> files = [];
+
+OmniPlayerState playerState = new OmniPlayerState(player: player);
 
 List<String> scanFiles(String path) {
   List<String> result = [];
@@ -47,22 +52,22 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-if(Platform.isAndroid) {
-    Permission.storage.request().then((value) {
+    if (Platform.isAndroid) {
+      Permission.storage.request().then((value) {
         debugPrint("$value");
       });
 
       Permission.mediaLibrary.request().then((value) {
         debugPrint("$value");
       });
-}
+    }
 
     return MaterialApp(
-      title: 'ZeraMusic',
+      title: 'OmniMusic',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const MyHomePage(title: 'ZeraMusic'),
+      home: const MyHomePage(title: 'OmniMusic'),
     );
   }
 }
@@ -79,32 +84,35 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
-    var rds = files.map((var e) {
-      return Container(
-        padding: EdgeInsets.all(4),
-        child: TrackEntry(
-          title: e,
-          artist: "Unknown artist",
-          duration: 60 * 4,
-        ),
-      );
-    }).toList();
+    var rds =
+        files.map((var path) {
+          return Container(
+            padding: EdgeInsets.all(4),
+            child: TrackEntry(
+              state: playerState,
+              info: TrackInfo.readFromFile(path)
+            ),
+          );
+        }).toList();
 
-    var tracklist = Expanded(child: ListView(
-      scrollDirection: Axis.vertical,
-      shrinkWrap: true,
-      children: rds,
-    ));
+    var tracklist = Expanded(
+      child: ListView(
+        scrollDirection: Axis.vertical,
+        shrinkWrap: true,
+        children: rds,
+      ),
+    );
+
+    var pentry = PlayerSummary(state: playerState);
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
-      body: Column(children: <Widget>[
-        Text('Hello, world! (${files})'),
-        tracklist
-      ]),
+      body: Column(
+        children: <Widget>[Text('Hello, world! (${files})'), tracklist, pentry],
+      ),
     );
   }
 }

@@ -36,6 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   audioplayers: ^6.2.0
   permission_handler: ^11.4.0
+  audio_metadata_reader: ^1.1.0
 
 dev_dependencies:
   flutter_test:
