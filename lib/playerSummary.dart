@@ -1,12 +1,13 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:omnimusic/playerContext.dart';
 import 'package:omnimusic/playerState.dart';
 import 'package:omnimusic/tools.dart';
 
 class PlayerSummary extends StatefulWidget {
-  final OmniPlayerState state;
+  final PlayerContext context;
 
-  PlayerSummary({super.key, required this.state});
+  const PlayerSummary({super.key, required this.context});
 
   @override
   State<PlayerSummary> createState() => _PlayerSummaryState();
@@ -14,12 +15,13 @@ class PlayerSummary extends StatefulWidget {
 
 class _PlayerSummaryState extends State<PlayerSummary> {
   Duration? currentPosition;
+  double pos = 0.0;
 
   @override
   void initState() {
     super.initState();
 
-    widget.state.player.onPositionChanged.listen((dur) {
+    widget.context.state.player.onPositionChanged.listen((dur) {
       // Handle position updates
       setState(() {
         currentPosition = dur;
@@ -31,22 +33,45 @@ class _PlayerSummaryState extends State<PlayerSummary> {
   Widget build(BuildContext context) {
     var playButton = GestureDetector(
       onTap: () {
-        if (widget.state.player.state == PlayerState.playing) {
-          widget.state.player.pause();
+        if (widget.context.state.player.state == PlayerState.playing) {
+          widget.context.state.player.pause();
         } else {
-          widget.state.player.resume();
+          widget.context.state.player.resume();
         }
       },
-      child: Text(
-        widget.state.player.state == PlayerState.playing ? "PAUSE" : "PLAY",
+      child: Icon(
+        widget.context.state.player.state == PlayerState.playing
+            ? Icons.pause
+            : Icons.play_arrow,
+        size: 32.0,
       ),
+    );
+
+    var prevButton = GestureDetector(
+      onTap: () {
+        widget.context.previous();
+      },
+      child: Icon(Icons.skip_previous, size: 32.0),
+    );
+
+    var nextButton = GestureDetector(
+      onTap: () {
+        widget.context.next();
+      },
+      child: Icon(Icons.skip_next, size: 32.0),
     );
 
     var progress = Slider(
       value: currentPosition?.inSeconds.toDouble() ?? 0.0,
-      max: widget.state.currentTrackInfo?.duration?.inSeconds.toDouble() ?? 0.0,
-      onChanged: (val) {},
-      padding: EdgeInsets.all(0.0),
+      max: widget.context.state.currentTrackInfo?.duration?.inSeconds.toDouble() ?? 0.0,
+      onChanged: (val) {
+        setState(() {
+          currentPosition = Duration(milliseconds: (val * 1000).toInt());
+
+          widget.context.state.player.seek(currentPosition!);
+        });
+      },
+      padding: EdgeInsets.all(2),
     );
 
     var trackPosition = Row(
@@ -59,7 +84,7 @@ class _PlayerSummaryState extends State<PlayerSummary> {
         Expanded(child: progress),
         Container(
           padding: EdgeInsets.only(left: 16.0),
-          child: Text(durationToTime(widget.state.currentTrackInfo?.duration)),
+          child: Text(durationToTime(widget.context.state.currentTrackInfo?.duration)),
         ),
       ],
     );
@@ -81,19 +106,24 @@ class _PlayerSummaryState extends State<PlayerSummary> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.state.currentTrackInfo?.title ?? "No Data",
-                      style: TextStyle(fontSize: 16),
-                    ),
-                    Text(widget.state.currentTrackInfo?.artist ?? "No Data"),
-                  ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.context.state.currentTrackInfo?.title ?? "No Data",
+                        style: TextStyle(
+                          fontSize: 16,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Text(widget.context.state.currentTrackInfo?.artist ?? "No Data"),
+                    ],
+                  ),
                 ),
-                Text("BKWD"),
+                prevButton,
                 playButton,
-                Text("FWD"),
+                nextButton,
               ],
             ),
           ],

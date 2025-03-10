@@ -1,48 +1,21 @@
 import 'dart:core';
 import 'dart:io';
 
+import 'package:omnimusic/playerContext.dart';
 import 'package:omnimusic/playerState.dart';
 import 'package:omnimusic/playerSummary.dart';
+import 'package:omnimusic/storage_helper.dart';
 import 'package:omnimusic/trackEntry.dart';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:omnimusic/trackInfo.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-final player = AudioPlayer();
-List<String> files = [];
+late AudioPlayer player;
 
-OmniPlayerState playerState = new OmniPlayerState(player: player);
-
-List<String> scanFiles(String path) {
-  List<String> result = [];
-  Directory dir = Directory(path);
-
-  if (dir.existsSync()) {
-    dir.listSync().forEach((FileSystemEntity entity) {
-      if (entity is File) {
-        result.add(entity.path);
-      }
-    });
-  } else {
-    print("`${path}` reading error");
-  }
-
-  return result;
-}
-
-String? homeDir() {
-  return Platform.environment['HOME'] // Linux
-      ??
-      Platform.environment['USERPROFILE'] // Windows
-      ??
-      '/sdcard'; // Android
-}
+late PlayerContext playerContext;
 
 void main() {
-  var path = "${homeDir()!}/Music/";
-  files = scanFiles(path);
-
   runApp(const MyApp());
 }
 
@@ -83,15 +56,23 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   @override
+  void initState() {
+    super.initState();
+
+    player = AudioPlayer();
+    playerContext = PlayerContext(
+      state: OmniPlayerState(player: player),
+      tracks: getTracks(),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     var rds =
-        files.map((var path) {
+        playerContext.tracks.map((tk) {
           return Container(
             padding: EdgeInsets.all(4),
-            child: TrackEntry(
-              state: playerState,
-              info: TrackInfo.readFromFile(path)
-            ),
+            child: TrackEntry(p_context: playerContext, info: tk),
           );
         }).toList();
 
@@ -103,7 +84,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     );
 
-    var pentry = PlayerSummary(state: playerState);
+    var pentry = PlayerSummary(context: playerContext);
 
     return Scaffold(
       appBar: AppBar(
@@ -111,8 +92,32 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Column(
-        children: <Widget>[Text('Hello, world! (${files})'), tracklist, pentry],
+        children: <Widget>[
+          tracklist,
+          Container(padding: EdgeInsets.all(8), child: pentry),
+        ],
       ),
+      // body: FutureBuilder<List<SongModel>>(
+      //   future: ...,
+      //   builder: (context, snapshot) {
+      //     if (snapshot.connectionState == ConnectionState.waiting) {
+      //       return Center(child: CircularProgressIndicator());
+      //     } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+      //       return Center(child: Text("No music found"));
+      //     }
+      //     return ListView.builder(
+      //       itemCount: snapshot.data!.length,
+      //       itemBuilder: (context, index) {
+      //         return ListTile(
+      //           title: Text(snapshot.data![index].title),
+      //           subtitle: Text(
+      //             snapshot.data![index].artist ?? "Unknown Artist",
+      //           ),
+      //         );
+      //       },
+      //     );
+      //   },
+      // ),
     );
   }
 }

@@ -1,16 +1,15 @@
-import 'dart:ffi';
-
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:omnimusic/playerContext.dart';
 import 'package:omnimusic/playerState.dart';
 import 'package:omnimusic/tools.dart';
 import 'package:omnimusic/trackInfo.dart';
 
 class TrackEntry extends StatelessWidget {
-  final OmniPlayerState state;
+  final PlayerContext p_context;
   final TrackInfo info;
 
-  const TrackEntry({super.key, required this.state, required this.info});
+  const TrackEntry({super.key, required this.p_context, required this.info});
 
   @override
   Widget build(BuildContext context) {
@@ -24,12 +23,26 @@ class TrackEntry extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(info.title, style: TextStyle(fontSize: 16)),
-              Text(info.artist),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  info.title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Text(
+                  info.artist,
+                  style: TextStyle(
+                    fontSize: 16,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
           ),
           Text(durationToTime(info.duration)),
         ],
@@ -38,10 +51,10 @@ class TrackEntry extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        state.player.stop();
-        state.player.play(DeviceFileSource(info.path));
+        p_context.state.player.stop();
+        p_context.state.player.play(DeviceFileSource(info.path));
 
-        state.currentTrackInfo = info;
+        p_context.state.currentTrackInfo = info;
       },
       child: ctr,
     );
