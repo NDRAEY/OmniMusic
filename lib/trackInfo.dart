@@ -1,7 +1,10 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
-import 'package:on_audio_query_platform_interface/src/models/song_model.dart';
+import 'package:flutter/foundation.dart';
+import 'package:on_audio_query_forked/on_audio_query.dart';
+import 'package:uri_to_file/uri_to_file.dart';
 
 class TrackInfo {
   String path;
@@ -24,12 +27,14 @@ class TrackInfo {
     );
   }
 
-  static TrackInfo fromSong(SongModel song) {
+  static Future<TrackInfo> fromSong(SongModel song) async {
+    var uri = song.uri!;
+
     return TrackInfo(
-      path: song.uri!,
+      path: uri,
       title: song.title,
       artist: song.artist!,
-      duration: Duration(seconds: song.duration!)
+      duration: Duration(milliseconds: song.duration!)
     );
   }
 }

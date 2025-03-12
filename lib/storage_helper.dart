@@ -1,8 +1,11 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:omnimusic/filesystem.dart';
 import 'package:omnimusic/trackInfo.dart';
-import 'package:on_audio_query/on_audio_query.dart';
+import 'package:on_audio_query_forked/on_audio_query.dart';
+
+import 'dart:developer';
 
 List<String> scanFiles(String path) {
   List<String> result = [];
@@ -25,26 +28,21 @@ List<TrackInfo> filesToTracks(List<String> files) {
   }).toList();
 }
 
-List<TrackInfo> getTracks() {
+Future<List<TrackInfo>> getTracks() async {
   if (Platform.isAndroid) {
     final OnAudioQuery audioQuery = OnAudioQuery();
-    List<TrackInfo> tracks = [];
-    bool wait = true;
 
-    audioQuery.querySongs().then((List<SongModel> value) {
-      tracks = value.map((var song) {
-        return TrackInfo.fromSong(song);
-      }).toList();
+    var tracks = await audioQuery.querySongs();
+    
+    List<TrackInfo> prep = [];
 
-      wait = false;
-    });
-
-    while(wait) {
-      continue;
+    for (var song in tracks) {
+      prep.add(await TrackInfo.fromSong(song));
     }
 
-    return tracks;
-  } else {
+    return prep.toList();
+  } else
+  {
     var path = "${homeDir()!}/Music/";
 
     return filesToTracks(scanFiles(path));

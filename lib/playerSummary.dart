@@ -51,14 +51,14 @@ class _PlayerSummaryState extends State<PlayerSummary> {
       onTap: () {
         widget.context.previous();
       },
-      child: Icon(Icons.skip_previous, size: 32.0),
+      child: const Icon(Icons.skip_previous, size: 32.0),
     );
 
     var nextButton = GestureDetector(
       onTap: () {
         widget.context.next();
       },
-      child: Icon(Icons.skip_next, size: 32.0),
+      child: const Icon(Icons.skip_next, size: 32.0),
     );
 
     var progress = Slider(
@@ -71,19 +71,19 @@ class _PlayerSummaryState extends State<PlayerSummary> {
           widget.context.state.player.seek(currentPosition!);
         });
       },
-      padding: EdgeInsets.all(2),
+      padding: const EdgeInsets.all(2),
     );
 
     var trackPosition = Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Container(
-          padding: EdgeInsets.only(right: 16.0),
+          padding: const EdgeInsets.only(right: 16.0),
           child: Text(durationToTime(currentPosition)),
         ),
         Expanded(child: progress),
         Container(
-          padding: EdgeInsets.only(left: 16.0),
+          padding: const EdgeInsets.only(left: 16.0),
           child: Text(durationToTime(widget.context.state.currentTrackInfo?.duration)),
         ),
       ],

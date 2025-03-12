@@ -1,6 +1,11 @@
+import 'dart:developer';
+import 'dart:io';
+
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/material.dart';
 import 'package:omnimusic/playerState.dart';
 import 'package:omnimusic/trackInfo.dart';
+import 'package:uri_to_file/uri_to_file.dart';
 
 class PlayerContext {
   final OmniPlayerState state;
@@ -12,9 +17,32 @@ class PlayerContext {
     required this.tracks
   });
 
-  void reloadTrack() {
+  void reloadTrack() async {
+    state.player.stop();
+
     state.currentTrackInfo = tracks[currentTrackIndex];
-    state.player.play(DeviceFileSource(state.currentTrackInfo!.path));
+    
+    var path = state.currentTrackInfo!.path;
+
+    if(Platform.isAndroid) {
+      var file = await toFile(path);
+      debugPrint(file.toString());
+
+      path = file.path;
+    }
+
+    state.player.play(DeviceFileSource(path));
+  }
+
+  void playNth(int idx) {
+    if(!(idx >= 0 && idx < tracks.length)) {
+      debugPrint('Out of index: $idx in range [0..${tracks.length}]');
+      return;
+    }
+
+    currentTrackIndex = idx;
+
+    reloadTrack();
   }
 
   void previous() {
