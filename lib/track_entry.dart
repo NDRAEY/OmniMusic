@@ -1,9 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:omnimusic/playerContext.dart';
+import 'package:omnimusic/player_context.dart';
 import 'package:omnimusic/tools.dart';
-import 'package:omnimusic/trackInfo.dart';
+import 'package:omnimusic/track_info.dart';
 import 'package:uri_to_file/uri_to_file.dart';
 
 class TrackEntry extends StatelessWidget {

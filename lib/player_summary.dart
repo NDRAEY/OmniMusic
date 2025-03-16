@@ -1,7 +1,7 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:omnimusic/playerContext.dart';
-import 'package:omnimusic/playerState.dart';
+import 'package:omnimusic/player_context.dart';
+import 'package:omnimusic/repeat.dart';
 import 'package:omnimusic/tools.dart';
 
 class PlayerSummary extends StatefulWidget {
@@ -23,9 +23,11 @@ class _PlayerSummaryState extends State<PlayerSummary> {
 
     widget.context.state.player.onPositionChanged.listen((dur) {
       // Handle position updates
-      setState(() {
-        currentPosition = dur;
-      }); // Update UI if necessary
+      if (mounted) {
+        setState(() {
+          currentPosition = dur;
+        }); // Update UI if necessary
+      }
     });
   }
 
@@ -61,9 +63,23 @@ class _PlayerSummaryState extends State<PlayerSummary> {
       child: const Icon(Icons.skip_next, size: 32.0),
     );
 
+    var repeatButton = GestureDetector(
+      onTap: () {
+        setState(() {
+          widget.context.state.repeat = switchRepeatMode(
+            widget.context.state.repeat,
+          );
+        });
+      },
+      child: Icon(repeatModeToIcon(widget.context.state.repeat), size: 32.0),
+    );
+
     var progress = Slider(
       value: currentPosition?.inSeconds.toDouble() ?? 0.0,
-      max: widget.context.state.currentTrackInfo?.duration?.inSeconds.toDouble() ?? 0.0,
+      max:
+          widget.context.state.currentTrackInfo?.duration?.inSeconds
+              .toDouble() ??
+          0.0,
       onChanged: (val) {
         setState(() {
           currentPosition = Duration(milliseconds: (val * 1000).toInt());
@@ -84,9 +100,20 @@ class _PlayerSummaryState extends State<PlayerSummary> {
         Expanded(child: progress),
         Container(
           padding: const EdgeInsets.only(left: 16.0),
-          child: Text(durationToTime(widget.context.state.currentTrackInfo?.duration)),
+          child: Text(
+            durationToTime(widget.context.state.currentTrackInfo?.duration),
+          ),
         ),
       ],
+    );
+
+    var trackTitle = Text(
+      widget.context.state.currentTrackInfo?.title ?? "No Data",
+      style: TextStyle(fontSize: 16, overflow: TextOverflow.ellipsis),
+    );
+
+    var trackArtist = Text(
+      widget.context.state.currentTrackInfo?.artist ?? "No Data",
     );
 
     return GestureDetector(
@@ -99,7 +126,7 @@ class _PlayerSummaryState extends State<PlayerSummary> {
           border: Border.all(color: Colors.black, width: 2),
           borderRadius: BorderRadius.circular(4),
         ),
-        padding: EdgeInsets.all(8),
+        padding: const EdgeInsets.all(8),
         child: Column(
           children: [
             trackPosition,
@@ -109,22 +136,14 @@ class _PlayerSummaryState extends State<PlayerSummary> {
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.context.state.currentTrackInfo?.title ?? "No Data",
-                        style: TextStyle(
-                          fontSize: 16,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      Text(widget.context.state.currentTrackInfo?.artist ?? "No Data"),
-                    ],
+                    children: [trackTitle, trackArtist],
                   ),
                 ),
-                prevButton,
-                playButton,
-                nextButton,
               ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [prevButton, playButton, nextButton, repeatButton],
             ),
           ],
         ),

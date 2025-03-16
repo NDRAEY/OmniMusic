@@ -1,10 +1,7 @@
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
-import 'package:flutter/foundation.dart';
 import 'package:on_audio_query_forked/on_audio_query.dart';
-import 'package:uri_to_file/uri_to_file.dart';
 
 class TrackInfo {
   String path;
@@ -12,8 +9,9 @@ class TrackInfo {
   String title;
   String artist;
   Duration? duration;
+  DateTime additionDate;
 
-  TrackInfo({required this.path, required this.title,  required this.artist, required this.duration});
+  TrackInfo({required this.path, required this.title,  required this.artist, required this.duration, required this.additionDate});
 
   static TrackInfo readFromFile(String path) {
     final track = File(path);
@@ -21,9 +19,10 @@ class TrackInfo {
 
     return TrackInfo(
       path: path,
-      title: metadata.title ?? path,
+      title: metadata.title ?? path.split("/").last,
       artist: metadata.artist ?? "Unknown artist",
-      duration: metadata.duration
+      duration: metadata.duration,
+      additionDate: track.lastModifiedSync()
     );
   }
 
@@ -34,7 +33,8 @@ class TrackInfo {
       path: uri,
       title: song.title,
       artist: song.artist!,
-      duration: Duration(milliseconds: song.duration!)
+      duration: Duration(milliseconds: song.duration!),
+      additionDate: DateTime.fromMillisecondsSinceEpoch((song.dateAdded! / 1000).toInt())
     );
   }
 }

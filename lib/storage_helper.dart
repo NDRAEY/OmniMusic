@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:omnimusic/filesystem.dart';
-import 'package:omnimusic/trackInfo.dart';
+import 'package:omnimusic/track_info.dart';
 import 'package:on_audio_query_forked/on_audio_query.dart';
 
 import 'dart:developer';
