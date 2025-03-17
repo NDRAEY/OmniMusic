@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:omnimusic/main.dart';
 import 'package:omnimusic/player_state.dart';
 import 'package:omnimusic/track_info.dart';
@@ -36,6 +37,8 @@ class PlayerContext {
     var path = state.currentTrackInfo!.path;
 
     if(Platform.isAndroid) {
+      await Directory("/data/user/0/com.ndraey.omnimusic/cache/uri_to_file/").delete(recursive: true);
+
       var file = await toFile(path);
       debugPrint(file.toString());
 
